@@ -1,4 +1,4 @@
-# My Portfolio from HarvardX's CS50P Course: Introduction to Python Programming
+# My Project Portfolio from HarvardX's CS50P Course: Introduction to Python Programming
 
 ## 🚀 Final Project 🚀
 This is my final project for CS50P! A Python script that tracks personal budget expenses.
