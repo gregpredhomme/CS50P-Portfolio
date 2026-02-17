@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt, matplotlib.ticker as mtick
 
 def main():
     if len(sys.argv) != 2: sys.exit("Usage: python project.py transactions.csv")
-    BUDGET_TARGETS = {"Rent": 2000.00, "Food": 600.00, "Transport": 200.00, "Shopping": 300.00, "Utilities": 150.00}
+    BUDGET_TARGETS = {"Rent": 1200.00, "Food": 600.00, "Transport": 200.00, 
+                      "Shopping": 300.00, "Utilities": 150.00}
     RULES = {
         "Rent": ["Rent", "Management", "Landlord"],
         "Food": ["Doordash", "Chipotle", "Shake Shack", "Sweetgreen"],
@@ -49,7 +50,8 @@ def get_clean_data(filename):
                 if not amt_str: continue
                 try:
                     # Handle accounting negatives e.g. ($100)
-                    if "(" in amt_str and ")" in amt_str: amt_str = "-" + amt_str.replace("(", "").replace(")", "")
+                    if "(" in amt_str and ")" in amt_str:
+                        amt_str = "-" + amt_str.replace("(", "").replace(")", "")
                     # Handle date formats (4 digit year vs. 2 digit year)
                     d_str = r.get("date", "").strip()
                     if not d_str: continue
@@ -67,9 +69,9 @@ def visualize_data(targets, actuals):
     """Generates comparison bar chart."""
     categories = list(targets.keys())
     x = range(len(categories))
-    plt.figure(figsize=(10, 5))
-    plt.bar([i-0.2 for i in x], targets.values(), 0.4, label="Budget", color="silver")
-    plt.bar([i+0.2 for i in x], [actuals[c] for c in categories], 0.4, label="Actual", color="#4682b4")
+    plt.figure(figsize=(7, 3))
+    plt.bar([i-0.125 for i in x], targets.values(), 0.25, label="Budget", color="silver")
+    plt.bar([i+0.125 for i in x], [actuals[c] for c in categories], 0.25, label="Actual", color="#4682b4")
     plt.xticks(list(x), categories)
     plt.gca().yaxis.set_major_formatter(mtick.StrMethodFormatter("${x:,.0f}"))
     plt.title("Budget vs. Actual Spending")
