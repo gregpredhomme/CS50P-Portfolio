@@ -1,5 +1,5 @@
 import csv, sys, datetime
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt, matplotlib.ticker as mtick
 
 def main():
     if len(sys.argv) != 2: sys.exit("Usage: python project.py transactions.csv")
@@ -32,11 +32,9 @@ def main():
     for cat, limit in BUDGET_TARGETS.items():
         actual = totals[cat]
         status = "OVER" if (limit - actual) < 0 else "Safe"
-        print(f"{cat:<12} | ${limit:<8.0f} | ${actual:<8.0f} | {status}")
-    
+        print(f"{cat:<12} | ${limit:<8,.0f} | ${actual:<8,.0f} | {status}")
     if totals["Other"] > 0:
-        print(f"{'-'*45}\n{'Other':<12} | {'N/A':<8} | ${totals['Other']:<8.0f} | Review!")
-
+        print(f"{'-'*45}\n{'Other':<12} | {'N/A':<8} | ${totals['Other']:<8,.0f} | Review!")
     visualize_data(BUDGET_TARGETS, totals)
 
 def get_clean_data(filename):
@@ -46,22 +44,22 @@ def get_clean_data(filename):
         with open(filename, encoding="utf-8-sig") as f:
             for row in csv.DictReader(f):
                 # Normalize keys and clean amount string 
-                r = {k.strip().lower(): v for k, v in row.items() if k}
-                amt_str = r.get("amount", "").replace("$", "").replace(",", "")
+                r = {k.strip().lower(): (v or "") for k, v in row.items() if k}
+                amt_str = r.get("amount", "").replace("$", "").replace(",", "").strip()
                 if not amt_str: continue
                 try:
                     # Handle accounting negatives e.g. ($100)
-                    if "(" in amt_str: amt_str = "-" + amt_str.replace("(", "").replace(")", "")
+                    if "(" in amt_str and ")" in amt_str: amt_str = "-" + amt_str.replace("(", "").replace(")", "")
                     # Handle date formats (4 digit year vs. 2 digit year)
                     d_str = r.get("date", "").strip()
+                    if not d_str: continue
                     fmt = "%m/%d/%Y" if len(d_str.split("/")[-1]) == 4 else "%m/%d/%y"
-
                     clean_rows.append({
                         "date": datetime.datetime.strptime(d_str, fmt),
-                        "desc": r.get("description", "").lower(),
+                        "desc": r.get("description", "").strip().lower(),
                         "amount": float(amt_str)
                     })
-                except ValueError: continue
+                except (ValueError, TypeError): continue
     except FileNotFoundError: sys.exit("File not found")
     return clean_rows
 
@@ -69,15 +67,16 @@ def visualize_data(targets, actuals):
     """Generates comparison bar chart."""
     categories = list(targets.keys())
     x = range(len(categories))
-
     plt.figure(figsize=(10, 5))
     plt.bar([i-0.2 for i in x], targets.values(), 0.4, label="Budget", color="silver")
     plt.bar([i+0.2 for i in x], [actuals[c] for c in categories], 0.4, label="Actual", color="#4682b4")
     plt.xticks(list(x), categories)
+    plt.gca().yaxis.set_major_formatter(mtick.StrMethodFormatter("${x:,.0f}"))
     plt.title("Budget vs. Actual Spending")
     plt.legend()
     plt.tight_layout()
     plt.savefig("spending_chart.png")
+    plt.close()
     print("\nChart generated: spending_chart.png")
 
 if __name__ == "__main__":
