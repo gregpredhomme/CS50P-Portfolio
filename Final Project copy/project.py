@@ -1,7 +1,9 @@
 import csv, sys, datetime
 import matplotlib.pyplot as plt, matplotlib.ticker as mtick
+from typing import Any
 
-def main():
+def main() -> None:
+    """Entry point: loads transactions from CSV, categorizes spend, prints budget status, and generates a chart."""
     if len(sys.argv) != 2: sys.exit("Usage: python project.py transactions.csv")
     BUDGET_TARGETS = {"Rent": 1200.00, "Food": 600.00, "Transport": 200.00, 
                       "Shopping": 300.00, "Utilities": 150.00}
@@ -38,8 +40,9 @@ def main():
         print(f"{'-'*45}\n{'Other':<12} | {'N/A':<8} | ${totals['Other']:<8,.0f} | Review!")
     visualize_data(BUDGET_TARGETS, totals)
 
-def get_clean_data(filename):
+def get_clean_data(filename: str) -> list[dict[str, Any]]:
     """Ingests CSV and handles type conversion (float/date)."""
+    # Expected columns: Date, Description, Amount (case-insensitive)
     clean_rows = []
     try:
         with open(filename, encoding="utf-8-sig") as f:
@@ -65,7 +68,7 @@ def get_clean_data(filename):
     except FileNotFoundError: sys.exit("File not found")
     return clean_rows
 
-def visualize_data(targets, actuals):
+def visualize_data(targets: dict[str, float], actuals: dict[str, float]) -> None:
     """Generates comparison bar chart."""
     categories = list(targets.keys())
     x = range(len(categories))
